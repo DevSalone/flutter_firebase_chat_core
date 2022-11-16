@@ -465,4 +465,65 @@ class FirebaseChatCore {
           ),
         );
   }
+  /// Adds a [types.User] to a [types.Room] in the Firestore.
+  Future<void> addUserToRoom(types.Room? room, types.User user) async {
+    if (room != null) {
+      final users = room.users;
+      final userIds = users.map((e) => e.id).toList();
+      if(!userIds.contains(user.id)){
+        users.add(user);
+      }
+      final newRoom = room.copyWith(users: users);
+      updateRoom(newRoom);
+    }
+  }
+
+  /// Creates a new room of [types.RoomType.channel] in the Firestore.
+  /// Returns the created [types.Room] object.
+  Future<types.Room> createChannel({
+    required String name,
+    String? imageUrl,
+    Map<String, dynamic>? metadata,
+  }) async {
+    if (firebaseUser == null) return Future.error('User does not exist');
+
+    final roomQuery = await getFirebaseFirestore()
+        .collection(config.roomsCollectionName)
+        .where('type', isEqualTo: types.RoomType.channel.toShortString())
+        .where('name', isEqualTo: name)
+        .limit(1)
+        .get();
+
+    if (roomQuery.docs.isNotEmpty) {
+      final room = (await processRoomsQuery(
+        firebaseUser!,
+        getFirebaseFirestore(),
+        roomQuery,
+        config.usersCollectionName,
+      )).first;
+      return room;
+    }
+
+    final room = await getFirebaseFirestore()
+        .collection(config.roomsCollectionName)
+        .add({
+      'createdAt': FieldValue.serverTimestamp(),
+      'imageUrl': imageUrl,
+      'metadata': metadata,
+      'name': name,
+      'type': types.RoomType.channel.toShortString(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'userIds': null,
+      'userRoles': null,
+    });
+
+    return types.Room(
+      id: room.id,
+      imageUrl: imageUrl,
+      metadata: metadata,
+      name: name,
+      type: types.RoomType.channel,
+      users: const [],
+    );
+  }
 }
