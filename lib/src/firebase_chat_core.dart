@@ -468,8 +468,8 @@ class FirebaseChatCore {
   /// Adds a [types.User] to a [types.Room] in the Firestore.
   Future<void> addUserToRoom(types.Room? room, types.User user) async {
     if (room != null) {
-      final users = room.users;
-      final userIds = users.map((e) => e.id).toList();
+      List<types.User> users = room.users ?? [];
+      List<String> userIds = users.map((e) => e.id).toList();
       if(!userIds.contains(user.id)){
         users.add(user);
       }
