@@ -465,18 +465,6 @@ class FirebaseChatCore {
           ),
         );
   }
-  /// Adds a [types.User] to a [types.Room] in the Firestore.
-  Future<void> addUserToRoom(types.Room? room, types.User user) async {
-    if (room != null) {
-      List<types.User> users = room.users ?? [];
-      List<String> userIds = users.map((e) => e.id).toList();
-      if(!userIds.contains(user.id)){
-        users.add(user);
-      }
-      final newRoom = room.copyWith(users: users);
-      updateRoom(newRoom);
-    }
-  }
 
   /// Adds a [types.User] to a [types.Room] in the Firestore.
   Future<void> updateUserRoom(types.Room? room, types.User user) async {
