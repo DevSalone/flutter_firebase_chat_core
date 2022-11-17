@@ -478,6 +478,20 @@ class FirebaseChatCore {
     }
   }
 
+  /// Adds a [types.User] to a [types.Room] in the Firestore.
+  Future<void> updateUserRoom(types.Room? room, types.User user) async {
+    if (room != null) {
+      final users = <types.User>[];
+      users.addAll(room.users);
+      final userIds = users.map((e) => e.id).toList();
+      if(!userIds.contains(user.id)){
+        users.add(user);
+      }
+      final newRoom = room.copyWith(users: users);
+      updateRoom(newRoom);
+    }
+  }
+
   /// Creates a new room of [types.RoomType.channel] in the Firestore.
   /// Returns the created [types.Room] object.
   Future<types.Room> createChannel({
@@ -513,8 +527,8 @@ class FirebaseChatCore {
       'name': name,
       'type': types.RoomType.channel.toShortString(),
       'updatedAt': FieldValue.serverTimestamp(),
-      'userIds': null,
-      'userRoles': null,
+      'userIds': [],
+      'userRoles': [],
     });
 
     return types.Room(
